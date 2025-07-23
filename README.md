@@ -13,7 +13,7 @@ Everything runs **locally**, with no API calls or internet access required after
 
 ```bash
 .
-├── assistant.py                # Main Python loop for record → transcribe → generate → speak
+├── assistant.py                # Main Python loop for record>transcribe>generate>speak
 ├── llama.cpp/                  # Local LLM server (GGUF support)
 ├── whisper.cpp/                # Local Whisper engine for STT
 ├── models/
@@ -90,25 +90,15 @@ python assistant.py
 ```
 
 This will:
-
-Record 5 seconds of audio
-
-Transcribe it using Whisper
-
-Generate a response using TinyLlama
-
-Speak the response with Coqui TTS
-
-
-./llama.cpp/build/bin/llama-server -m models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf --port 8000
+- Record 5 seconds of audio
+- Transcribe it using Whisper
+- Generate a response using TinyLlama
+- Speak the response with Coqui TTS
 
 
 
 ### 🙌 Acknowledgements
-ggerganov/whisper.cpp - https://github.com/ggml-org/whisper.cpp
-
-ggerganov/llama.cpp - https://github.com/ggml-org/llama.cpp
-
-coqui-ai/TTS - https://github.com/coqui-ai/TTS
-
-TheBloke on Hugging Face - https://huggingface.co/TheBloke
+- ggerganov/whisper.cpp - https://github.com/ggml-org/whisper.cpp
+- ggerganov/llama.cpp - https://github.com/ggml-org/llama.cpp
+- coqui-ai/TTS - https://github.com/coqui-ai/TTS
+- TheBloke on Hugging Face - https://huggingface.co/TheBloke

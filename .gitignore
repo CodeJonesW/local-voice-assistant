@@ -1,0 +1,37 @@
+# Python virtual environment
+.venv/
+
+# Audio recordings and outputs
+*.wav
+*.mp3
+*.ogg
+
+# Transcription output files
+*.txt
+
+# Log files
+*.log
+
+# llama.cpp and whisper.cpp directories
+llama.cpp
+whisper.cpp
+
+# Models directory (exclude large model files from git)
+models/
+
+# Environment variables (secrets, API keys, etc.)
+.env
+
+# Editor and OS junk
+.DS_Store
+*.swp
+*.swo
+*.bak
+*~
+
+# __pycache__ and compiled Python files
+__pycache__/
+*.py[cod]
+
+
+!requirements.txt
