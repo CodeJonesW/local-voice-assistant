@@ -1,4 +1,8 @@
 import io
+import pytest
+
+pytest.importorskip("flask")
+
 from server import app, socketio, retriever
 
 
