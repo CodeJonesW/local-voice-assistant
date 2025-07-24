@@ -23,6 +23,8 @@ Everything runs **locally**, with no API calls or internet access required after
 ├── mic.wav.txt                 # Transcribed text
 ├── output.wav                  # Spoken response
 ├── run.sh                      # Optional launcher
+├── retriever.py                # Simple vector store for RAG
+├── rag_prompt_builder.py       # Helper to build RAG prompts
 ├── requirements.txt            # Python dependencies
 └── README.md                   # This file
 ```
@@ -94,6 +96,27 @@ This will:
 - Transcribe it using Whisper
 - Generate a response using TinyLlama
 - Speak the response with Coqui TTS
+
+### 📚 Custom Knowledge (RAG mode)
+Add your own documents to the vector store and run the assistant in custom mode:
+
+```bash
+python retriever.py --add my_notes.txt
+python assistant.py --mode custom
+```
+
+Or add a file on the fly when launching the assistant:
+
+```bash
+python assistant.py --add-doc my_notes.txt --mode custom
+```
+
+To bulk train on all files in the `toTrain` directory and then move them to
+`previouslyTrainedOn`:
+
+```bash
+python retriever.py --train-folder toTrain
+```
 
 
 
