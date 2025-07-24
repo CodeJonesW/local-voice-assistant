@@ -105,6 +105,12 @@ python retriever.py --add my_notes.txt
 python assistant.py --mode custom
 ```
 
+Or add a file on the fly when launching the assistant:
+
+```bash
+python assistant.py --add-doc my_notes.txt --mode custom
+```
+
 
 
 ### 🙌 Acknowledgements
