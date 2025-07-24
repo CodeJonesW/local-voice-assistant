@@ -1,10 +1,22 @@
 import subprocess
 import os
-from TTS.api import TTS
 import json
+import argparse
+from TTS.api import TTS
+
+from metrics import MetricsLogger
 
 # Initialize TTS
 tts_engine = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False, gpu=False)
+
+# Parse CLI args / env var for metrics logging
+parser = argparse.ArgumentParser()
+parser.add_argument("--log-metrics", action="store_true", default=os.getenv("LOG_METRICS") == "1",
+                    help="Enable metrics logging")
+args = parser.parse_args()
+
+# Create metrics logger
+metrics = MetricsLogger(enabled=args.log_metrics)
 
 def record_audio():
     print("🎤 Speak now...")
@@ -47,12 +59,17 @@ def speak(text):
 
 def loop():
     while True:
-        record_audio()
-        text = transcribe()
+        with metrics.time("record_audio"):
+            record_audio()
+        with metrics.time("transcribe"):
+            text = transcribe()
         print(f"🗣️ You said: {text}")
-        reply = generate_response(text)
+        with metrics.time("generate_response"):
+            reply = generate_response(text)
         print(f"🤖 AI: {reply}")
-        speak(reply)
+        with metrics.time("speak"):
+            speak(reply)
+        metrics.log_run()
 
 if __name__ == "__main__":
     loop()
