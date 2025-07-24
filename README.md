@@ -111,6 +111,13 @@ Or add a file on the fly when launching the assistant:
 python assistant.py --add-doc my_notes.txt --mode custom
 ```
 
+To bulk train on all files in the `toTrain` directory and then move them to
+`previouslyTrainedOn`:
+
+```bash
+python retriever.py --train-folder toTrain
+```
+
 
 
 ### 🙌 Acknowledgements

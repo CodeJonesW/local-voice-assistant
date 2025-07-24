@@ -2,6 +2,7 @@
 
 import os
 import pickle
+import shutil
 from typing import List, Tuple
 from collections import Counter
 import math
@@ -45,6 +46,20 @@ class Retriever:
             self.vectors.extend(Counter(c.split()) for c in new_chunks)
         self.save()
 
+    def add_folder(self, folder: str, processed_folder: str = "previouslyTrainedOn") -> None:
+        """Add all files from a folder and then move them to processed_folder."""
+        paths = []
+        for name in os.listdir(folder):
+            path = os.path.join(folder, name)
+            if os.path.isfile(path):
+                paths.append(path)
+        if not paths:
+            return
+        self.add_files(paths)
+        os.makedirs(processed_folder, exist_ok=True)
+        for path in paths:
+            shutil.move(path, os.path.join(processed_folder, os.path.basename(path)))
+
     @staticmethod
     def _cosine(a: Counter, b: Counter) -> float:
         terms = set(a) | set(b)
@@ -73,6 +88,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Manage retrieval database")
     parser.add_argument("--add", nargs="*", help="Paths of text files to add")
+    parser.add_argument("--train-folder", help="Add all files from this folder and move them")
+    parser.add_argument("--processed-dir", default="previouslyTrainedOn", help="Where to move processed files")
     parser.add_argument("--db", default="vector_store.pkl", help="Path to DB file")
     args = parser.parse_args()
 
@@ -80,5 +97,10 @@ if __name__ == "__main__":
     if args.add:
         retriever.add_files(args.add)
         print(f"Added {len(args.add)} file(s) to {args.db}")
+    elif args.train_folder:
+        retriever.add_folder(args.train_folder, processed_folder=args.processed_dir)
+        print(
+            f"Trained on '{args.train_folder}' and moved files to '{args.processed_dir}'"
+        )
     else:
-        print("No action specified. Use --add to add documents.")
+        print("No action specified. Use --add or --train-folder.")
