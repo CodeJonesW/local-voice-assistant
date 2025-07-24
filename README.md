@@ -118,6 +118,14 @@ To bulk train on all files in the `toTrain` directory and then move them to
 python retriever.py --train-folder toTrain
 ```
 
+### 🕹️ Running the Web UI
+Start the llama-server as above, then run:
+```bash
+python server.py
+```
+Open http://localhost:5000 in your browser. Use the file form to upload docs and the buttons to talk to the assistant.
+
+
 
 
 ### 🙌 Acknowledgements
