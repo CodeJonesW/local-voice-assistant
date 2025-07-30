@@ -35,3 +35,5 @@ __pycache__/
 
 
 !requirements.txt
+
+vector_store.pkl

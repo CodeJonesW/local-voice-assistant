@@ -8,8 +8,6 @@ from metrics import MetricsLogger
 from retriever import Retriever
 from rag_prompt_builder import build_prompt
 
-# Initialize TTS
-tts_engine = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False, gpu=False)
 
 # Parse CLI args / env var for metrics logging and mode
 parser = argparse.ArgumentParser()
@@ -51,6 +49,7 @@ def prepare_prompt(text: str) -> str:
     if args.mode == "custom":
         chunks = retriever.retrieve(text)
         if chunks:
+            print(f"Retrieved {len(chunks)} chunks for query: {text}")
             return build_prompt(text, chunks)
     return text
 
@@ -68,6 +67,7 @@ def generate_response(prompt):
     # Parse the response and extract 'content'
     try:
         response = json.loads(result.stdout)
+        print(f"Response: {response}")
         return response.get("content", "Sorry, no response.")
     except json.JSONDecodeError:
         return "Sorry, could not parse the model response."
@@ -84,18 +84,28 @@ def speak(text):
 
 def loop():
     while True:
-        with metrics.time("record_audio"):
-            record_audio()
-        with metrics.time("transcribe"):
-            text = transcribe()
-        print(f"🗣️ You said: {text}")
-        prompt = prepare_prompt(text)
-        with metrics.time("generate_response"):
-            reply = generate_response(prompt)
-        print(f"🤖 AI: {reply}")
-        with metrics.time("speak"):
-            speak(reply)
-        metrics.log_run()
+        try:
+            text = input("🗣️ You: ")
+            if text.lower() in {"exit", "quit"}:
+                print("👋 Exiting.")
+                break
+
+            with metrics.time("prepare_prompt"):
+                prompt = prepare_prompt(text)
+                print(f"📝 Pre Rag Prompt: {prompt}")
+            with metrics.time("generate_response"):
+                reply = generate_response(prompt)
+                print(f"🤖 AI: {reply}")
+
+            # with metrics.time("speak"):
+                # print(f"🤖 AI: {reply}")
+                # speak(reply)
+
+            metrics.log_run()
+        except KeyboardInterrupt:
+            print("\n👋 Interrupted. Exiting.")
+            break
+
 
 
 if __name__ == "__main__":
