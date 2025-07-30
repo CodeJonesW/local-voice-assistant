@@ -14,7 +14,6 @@ def build_prompt(query: str, chunks: List[str]) -> str:
 
     print("--- Added Chunks ---")
     for idx, chunk in enumerate(chunks, 1):
-        snippet = chunk[:60].replace("\n", " ")
-        print(f"{idx}: {snippet}")
+        print(f"{idx}: {chunk[:60].replace('\n', ' ')}")
 
     return final_prompt
