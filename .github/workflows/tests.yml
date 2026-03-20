@@ -1,4 +1,4 @@
-name: Python package
+name: Tests
 
 on:
   push:
@@ -11,12 +11,23 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsndfile1 portaudio19-dev
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest Flask Flask-SocketIO
-      - name: Run tests
+          pip install pytest sounddevice soundfile numpy pydantic pydantic-settings pyyaml
+          pip install flask flask-socketio chromadb
+      - name: Run tests (unit tests only, skip integration)
         run: |
-          pytest -q
-          python -m py_compile assistant.py metrics.py tests/test_metrics.py
+          pytest -q tests/test_config.py tests/test_rag.py tests/test_metrics.py tests/test_retriever.py
+      - name: Compile check
+        run: |
+          python -m py_compile app/config.py
+          python -m py_compile app/audio.py
+          python -m py_compile app/rag.py
+          python -m py_compile app/metrics.py
+          python -m py_compile app/retriever.py

@@ -1,0 +1,50 @@
+# Local Voice Assistant Configuration
+# Edit this file to customize your setup.
+
+# Audio settings
+audio:
+  sample_rate: 16000
+  record_duration: 5
+  # Set to null for default device, or specify device index/name
+  input_device: null
+  output_device: null
+
+# Speech-to-text (faster-whisper)
+stt:
+  model_size: "base.en"
+  # Device: auto, cpu, cuda
+  device: "auto"
+  compute_type: "int8"
+
+# Text-to-speech (piper)
+tts:
+  # Path to piper ONNX voice model
+  model_path: "models/en_US-lessac-medium.onnx"
+
+# Language model (llama-cpp-python)
+llm:
+  model_path: "models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+  max_tokens: 256
+  temperature: 0.7
+  # Number of GPU layers: -1 for all, 0 for CPU only, or specific number
+  n_gpu_layers: -1
+  context_size: 2048
+
+# RAG / retriever (ChromaDB)
+retriever:
+  db_path: "chroma_db"
+  chunk_size: 200
+  n_results: 3
+  train_folder: "toTrain"
+  processed_folder: "previouslyTrainedOn"
+
+# Metrics logging
+metrics:
+  enabled: false
+  path: "metrics.csv"
+  rolling_window: 5
+
+# Web server
+server:
+  host: "0.0.0.0"
+  port: 5000

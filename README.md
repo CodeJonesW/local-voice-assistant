@@ -1,135 +1,94 @@
-# 🧠 Local Voice Assistant (Offline, GPU-Accelerated)
+# Local Voice Assistant (Offline, Cross-Platform)
 
-This is a fully offline voice assistant pipeline running on Linux with GPU acceleration. It uses:
-- 🎙️ `whisper.cpp` for speech-to-text
-- 🦙 `llama.cpp` with TinyLlama for language generation
-- 🔊 Coqui TTS for speech synthesis
+A fully offline voice assistant that runs on **macOS and Linux**. No API calls or internet required after setup.
 
-Everything runs **locally**, with no API calls or internet access required after setup.
+**Stack:**
+- **STT**: [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (CTranslate2-based Whisper)
+- **LLM**: [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) with Mistral 7B
+- **TTS**: [piper-tts](https://github.com/rhasspy/piper) (fast ONNX-based synthesis)
+- **RAG**: [ChromaDB](https://github.com/chroma-core/chroma) with built-in embeddings
+- **Audio**: [sounddevice](https://python-sounddevice.readthedocs.io/) (cross-platform PortAudio)
+
+**Hardware auto-detection**: Apple Silicon (Metal), NVIDIA (CUDA), or CPU-only — no configuration needed.
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
-```bash
-.
-├── assistant.py                # Main Python loop for record>transcribe>generate>speak
-├── llama.cpp/                  # Local LLM server (GGUF support)
-├── whisper.cpp/                # Local Whisper engine for STT
-├── models/
-│   ├── ggml-base.en.bin        # Whisper base English model
-│   └── tinyllama-1.1b-chat...  # TinyLlama quantized GGUF model
-├── mic.wav                     # Temporary recorded audio
-├── mic.wav.txt                 # Transcribed text
-├── output.wav                  # Spoken response
-├── run.sh                      # Optional launcher
-├── retriever.py                # Simple vector store for RAG
-├── rag_prompt_builder.py       # Helper to build RAG prompts
-├── requirements.txt            # Python dependencies
-└── README.md                   # This file
+```
+├── pyproject.toml              # Dependencies and project config
+├── config.yaml                 # User-editable settings
+├── app/
+│   ├── config.py               # Settings + hardware detection
+│   ├── audio.py                # Cross-platform record/play
+│   ├── stt.py                  # Speech-to-text (faster-whisper)
+│   ├── tts.py                  # Text-to-speech (piper)
+│   ├── llm.py                  # LLM inference (llama-cpp-python)
+│   ├── retriever.py            # Vector store (ChromaDB)
+│   ├── rag.py                  # RAG prompt builder
+│   ├── metrics.py              # Timing metrics
+│   ├── assistant.py            # CLI voice assistant
+│   └── server.py               # Web UI server
+├── static/                     # Web UI (HTML/JS)
+├── scripts/
+│   └── download_models.py      # Model downloader
+└── tests/                      # Test suite
 ```
 
-### ✅ Setup Instructions
-Clone and install each component in order:
+## Setup
 
-1. 🧠 Clone This Project
 ```bash
-git clone https://github.com/YOUR_USERNAME/local-voice-assistant.git
+git clone https://github.com/CodeJonesW/local-voice-assistant.git
 cd local-voice-assistant
 python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+source .venv/bin/activate   # macOS/Linux
+pip install -e .
 ```
 
-2. 🎙️ Install whisper.cpp (speech-to-text)
-```bash
-git clone https://github.com/ggerganov/whisper.cpp
-cd whisper.cpp
-make
-cd ..
-```
-
-Download the Whisper model:
-```bash
-wget https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin -P models/
-```
-
-3. 🦙 Install llama.cpp and Run the LLM Server
+### Download Models
 
 ```bash
-git clone https://github.com/ggerganov/llama.cpp
-cd llama.cpp
-mkdir build
-cd build
-cmake .. -DLLAMA_CUBLAS=on
-make -j
-cd ../..
+python -m scripts.download_models
 ```
 
-Download the TinyLlama GGUF model (Q4_K_M quantization):
+This downloads:
+- **Mistral 7B Instruct** (Q4_K_M, ~4.4 GB) — LLM
+- **Piper en_US-lessac-medium** (~60 MB) — TTS voice
+- faster-whisper downloads its model automatically on first run
+
+## Usage
+
+### CLI Voice Assistant
 ```bash
-wget https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf -P models/
+python -m app.assistant              # Voice mode (mic + speakers)
+python -m app.assistant --text-only  # Text-only mode
 ```
 
-Run the LLM server:
-
-./llama.cpp/build/bin/llama-server -m models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf --port 8000
-
-
-4. 🔊 Install Coqui TTS (Text-to-Speech)
+### Web UI
 ```bash
-pip install TTS
+python -m app.server
 ```
+Open http://localhost:5000 in your browser.
 
-The Python script will automatically load the tts_models/en/ljspeech/tacotron2-DDC model on first run.
-
-### 🚀 Running the Assistant
-Once the llama-server is running on port 8000, in a separate terminal:
-
+### RAG Mode (Custom Knowledge)
 ```bash
-source .venv/bin/activate
-python assistant.py
+# Add a document
+python -m app.assistant --add-doc my_notes.txt
+
+# Process all files in toTrain/ folder
+python -m app.assistant --train-folder
+
+# Run with RAG
+python -m app.assistant --mode custom
 ```
 
-This will:
-- Record 5 seconds of audio
-- Transcribe it using Whisper
-- Generate a response using TinyLlama
-- Speak the response with Coqui TTS
+## Configuration
 
-### 📚 Custom Knowledge (RAG mode)
-Add your own documents to the vector store and run the assistant in custom mode:
+Edit `config.yaml` to customize audio devices, model paths, recording duration, etc. All settings have sensible defaults.
 
-```bash
-python retriever.py --add my_notes.txt
-python assistant.py --mode custom
-```
-
-Or add a file on the fly when launching the assistant:
-
-```bash
-python assistant.py --add-doc my_notes.txt --mode custom
-```
-
-To bulk train on all files in the `toTrain` directory and then move them to
-`previouslyTrainedOn`:
-
-```bash
-python retriever.py --train-folder toTrain
-```
-
-### 🕹️ Running the Web UI
-Start the llama-server as above, then run:
-```bash
-python server.py
-```
-Open http://localhost:5000 in your browser. Use the file form to upload docs and the buttons to talk to the assistant.
-
-
-
-
-### 🙌 Acknowledgements
-- ggerganov/whisper.cpp - https://github.com/ggml-org/whisper.cpp
-- ggerganov/llama.cpp - https://github.com/ggml-org/llama.cpp
-- coqui-ai/TTS - https://github.com/coqui-ai/TTS
-- TheBloke on Hugging Face - https://huggingface.co/TheBloke
+## Acknowledgements
+- [SYSTRAN/faster-whisper](https://github.com/SYSTRAN/faster-whisper)
+- [abetlen/llama-cpp-python](https://github.com/abetlen/llama-cpp-python)
+- [rhasspy/piper](https://github.com/rhasspy/piper)
+- [chroma-core/chroma](https://github.com/chroma-core/chroma)
+- [TheBloke](https://huggingface.co/TheBloke) on Hugging Face

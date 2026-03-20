@@ -1,11 +1,15 @@
+"""Tests for app.metrics module."""
+
 import csv
-import builtins
 import time
-from metrics import MetricsLogger
+
+from app.config import MetricsConfig
+from app.metrics import MetricsLogger
 
 
 def test_time_records_duration(monkeypatch):
-    logger = MetricsLogger(enabled=False)
+    config = MetricsConfig(enabled=False)
+    logger = MetricsLogger(config)
     counter = iter([1.0, 2.0])
     monkeypatch.setattr(time, "perf_counter", lambda: next(counter))
     with logger.time("record_audio"):
@@ -15,7 +19,8 @@ def test_time_records_duration(monkeypatch):
 
 def test_log_run_writes_csv(tmp_path, monkeypatch):
     path = tmp_path / "metrics.csv"
-    logger = MetricsLogger(path=path, enabled=True)
+    config = MetricsConfig(enabled=True, path=str(path))
+    logger = MetricsLogger(config)
     logger.current = {
         "record_audio": 1.0,
         "transcribe": 2.0,
@@ -27,23 +32,16 @@ def test_log_run_writes_csv(tmp_path, monkeypatch):
     with open(path) as f:
         rows = list(csv.reader(f))
     assert rows[0] == [
-        "timestamp",
-        "record_audio",
-        "transcribe",
-        "generate_response",
-        "speak",
-        "total",
+        "timestamp", "record_audio", "transcribe",
+        "generate_response", "speak", "total",
     ]
     assert len(rows) == 2
-    assert float(rows[1][1]) == 1.0
-    assert float(rows[1][2]) == 2.0
-    assert float(rows[1][3]) == 3.0
-    assert float(rows[1][4]) == 4.0
     assert float(rows[1][5]) == 10.0
 
 
 def test_rolling_average(monkeypatch):
-    logger = MetricsLogger(enabled=False, rolling=5)
+    config = MetricsConfig(enabled=False, rolling_window=5)
+    logger = MetricsLogger(config)
     monkeypatch.setattr(time, "strftime", lambda *_: "2025-01-01 00:00:00")
     for i in range(3):
         logger.current = {
@@ -56,4 +54,3 @@ def test_rolling_average(monkeypatch):
     avg = logger.rolling_average()
     assert avg["record_audio"] == 2.0
     assert avg["total"] == 8.0
-

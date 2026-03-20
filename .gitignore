@@ -6,20 +6,16 @@
 *.mp3
 *.ogg
 
-# Transcription output files
-*.txt
-
 # Log files
 *.log
 
-# llama.cpp and whisper.cpp directories
-llama.cpp
-whisper.cpp
-
-# Models directory (exclude large model files from git)
+# Models directory (large files)
 models/
 
-# Environment variables (secrets, API keys, etc.)
+# ChromaDB data
+chroma_db/
+
+# Environment variables
 .env
 
 # Editor and OS junk
@@ -29,11 +25,17 @@ models/
 *.bak
 *~
 
-# __pycache__ and compiled Python files
+# Python bytecode
 __pycache__/
 *.py[cod]
+*.egg-info/
 
-
-!requirements.txt
-
+# Old files (kept for reference during migration)
 vector_store.pkl
+
+# Build artifacts
+dist/
+build/
+
+# Keep config example
+!config.yaml

@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "local-voice-assistant"
+version = "2.0.0"
+description = "Cross-platform offline voice assistant"
+requires-python = ">=3.10"
+dependencies = [
+    "sounddevice>=0.4.6",
+    "soundfile>=0.12.1",
+    "numpy>=1.24.0",
+    "faster-whisper>=1.0.0",
+    "piper-tts>=1.2.0",
+    "llama-cpp-python>=0.2.0",
+    "chromadb>=0.4.0",
+    "flask>=3.0.0",
+    "flask-socketio>=5.3.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pyyaml>=6.0",
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+voice-assistant = "app.assistant:main"
+voice-server = "app.server:main"
+download-models = "scripts.download_models:main"
+
+[tool.setuptools.packages.find]
+include = ["app*", "scripts*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
